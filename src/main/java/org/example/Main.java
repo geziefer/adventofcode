@@ -20,14 +20,21 @@ public class Main {
             right.add(Integer.valueOf(s.split(" {3}")[1]));
         });
 
-        // calculate total distance by comparing each row of the sorted lists
+        // calculate total distance by comparing each row of the sorted lists and take diff of the numbers
         int totalDistance = 0;
         left.sort(Comparator.naturalOrder());
         right.sort(Comparator.naturalOrder());
         for (int i = 0; i < left.size(); i++) {
             totalDistance += Math.abs(left.get(i) - right.get(i));
         }
+        System.out.printf("Total distance: %d\n", totalDistance);
 
-        System.out.printf("Total distance: %d", totalDistance);
+        // calculate total similarity score by comparing each row with the number of occurrences in the other
+        int totalSimilarity = 0;
+        for (int finalI : left) {
+            int count = right.stream().filter(s -> s == finalI).toList().size();
+            totalSimilarity += finalI * count;
+        }
+        System.out.printf("Total similarity: %d\n", totalSimilarity);
     }
 }
