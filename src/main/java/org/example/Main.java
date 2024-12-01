@@ -14,9 +14,9 @@ public class Main {
         List<Integer> left = new ArrayList<>();
         List<Integer> right = new ArrayList<>();
         try {
-            Files.readAllLines(path).stream().forEach(s -> {
-                left.add(Integer.valueOf(s.split("   ")[0]));
-                right.add(Integer.valueOf(s.split("   ")[1]));
+            Files.readAllLines(path).forEach(s -> {
+                left.add(Integer.valueOf(s.split(" {3}")[0]));
+                right.add(Integer.valueOf(s.split(" {3}")[1]));
             });
         } catch (IOException e) {
             throw new RuntimeException(e);
