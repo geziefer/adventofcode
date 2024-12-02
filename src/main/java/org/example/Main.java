@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -15,7 +12,7 @@ public class Main {
         // use default or input from outside to execute sub method for daily solution
         int dayDefault = 2;
         int day = args.length == 0 ? dayDefault : Integer.parseInt(args[0]);
-        switch(day) {
+        switch (day) {
             case 1 -> day1();
             case 2 -> day2();
         }
@@ -31,7 +28,20 @@ public class Main {
 
         // iterate over list of lists
         int saveCount = 0;
-        for (List<Integer> l : list) {
+        List<List<Integer>> retryList1 = new ArrayList<>();
+        List<List<Integer>> retryList2 = new ArrayList<>();
+        // find all safe lines, return 2 retry lists
+        saveCount += day2_saveCount(Collections.unmodifiableList(list), retryList1, retryList2, true);
+        // first retry list contains unsafe lines with deleted report in the given order
+        saveCount += day2_saveCount(retryList1, null, null, false);
+        // second retry list contains unsafe lines with first report deleted
+        saveCount += day2_saveCount(retryList2, null, null, false);
+        System.out.printf("Total safe reports: %d\n", saveCount);
+    }
+
+    private static int day2_saveCount(List<List<Integer>> input, List<List<Integer>> output1, List<List<Integer>> output2, boolean damperActive) {
+        int saveCount = 0;
+        for (List<Integer> l : input) {
             // in case l[0] and l[1] are equal it won't be decreasing, but stops in first inner loop
             boolean increasing = l.get(1) - l.get(0) > 0;
             boolean accept = true;
@@ -44,6 +54,17 @@ public class Main {
                         || !increasing && diff > 0
                         || Math.abs(diff) > 3) {
                     accept = false;
+                    // damper run is first run to determine retry lists
+                    if (damperActive) {
+                        // first retry list removes current report as it does not fit the order
+                        List<Integer> retryList1 = new ArrayList<>(l);
+                        retryList1.remove(i);
+                        output1.add(retryList1);
+                        // second retry list removes first report in case that was the unsafe one
+                        List<Integer> retryList2 = new ArrayList<>(l);
+                        retryList2.remove(0);
+                        output2.add(retryList2);
+                    }
                     break;
                 }
             }
@@ -52,7 +73,7 @@ public class Main {
                 saveCount++;
             }
         }
-        System.out.printf("Total safe reports: %d\n", saveCount);
+        return saveCount;
     }
 
     private static void day1() throws IOException {
@@ -82,5 +103,10 @@ public class Main {
             totalSimilarity += finalI * count;
         }
         System.out.printf("Total similarity: %d\n", totalSimilarity);
+    }
+    @SuppressWarnings("unused")
+    private static void printList(Iterable<?> list) {
+        list.forEach(s -> System.out.print(s.toString() + " "));
+        System.out.println();
     }
 }
