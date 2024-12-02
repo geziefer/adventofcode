@@ -11,7 +11,7 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) throws IOException {
         // read file from resources with a two column list
-        Path path = (Paths.get("src/main/resources/input.txt"));
+        Path path = (Paths.get("src/main/resources/day1.txt"));
         List<Integer> left = new ArrayList<>();
         List<Integer> right = new ArrayList<>();
         // split each line by 3 spaces and convert to numbers
