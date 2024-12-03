@@ -27,10 +27,15 @@ public class Main {
         // read everything in one big string and remove newlines
         String content = Files.readString(path).replace("\n", "");
 
+        // relace everything from a don't() to the next do() to exclude disabled muls
+        String shortened = content.replaceAll("don't\\(\\).*?do\\(\\)", "");
+
+        // scan for every mul(aaa,bbb)
         Pattern pattern =  Pattern.compile("mul\\(\\d{1,3},\\d{1,3}\\)");
-        Matcher matcher = pattern.matcher(content);
+        Matcher matcher = pattern.matcher(shortened);
         int total = 0;
         while (matcher.find()) {
+            // parse each number part and multiply
             String element = matcher.group();
             int f1 =  Integer.parseInt(element.substring(4, element.indexOf(',')));
             int f2 =  Integer.parseInt(element.substring(element.indexOf(',') + 1, element.indexOf(')')));
