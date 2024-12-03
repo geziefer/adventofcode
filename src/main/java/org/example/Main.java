@@ -5,24 +5,45 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws IOException {
         // use default or input from outside to execute sub method for daily solution
-        int dayDefault = 2;
+        int dayDefault = 3;
         int day = args.length == 0 ? dayDefault : Integer.parseInt(args[0]);
         switch (day) {
             case 1 -> day1();
             case 2 -> day2();
+            case 3 -> day3();
         }
     }
 
+    private static void day3() throws IOException {
+        // read file from resources
+        Path path = (Paths.get("src/main/resources/day3.txt"));
+        // read everything in one big string and remove newlines
+        String content = Files.readString(path).replace("\n", "");
+
+        Pattern pattern =  Pattern.compile("mul\\(\\d{1,3},\\d{1,3}\\)");
+        Matcher matcher = pattern.matcher(content);
+        int total = 0;
+        while (matcher.find()) {
+            String element = matcher.group();
+            int f1 =  Integer.parseInt(element.substring(4, element.indexOf(',')));
+            int f2 =  Integer.parseInt(element.substring(element.indexOf(',') + 1, element.indexOf(')')));
+            total += f1*f2;
+        }
+        System.out.printf("Total sum of muls: %d\n", total);
+    }
+
     private static void day2() throws IOException {
-        // read file from resources with a two column list
+        // read file from resources
         Path path = (Paths.get("src/main/resources/day2.txt"));
         List<List<Integer>> list = new ArrayList<>();
-        // split each line by 3 spaces and convert to numbers
+        // split each line by spaces and convert to numbers
         Files.readAllLines(path).forEach(s -> list.add(Arrays.stream(s.split(" ")).map(Integer::valueOf)
                 .collect(Collectors.toList())));
 
@@ -104,6 +125,7 @@ public class Main {
         }
         System.out.printf("Total similarity: %d\n", totalSimilarity);
     }
+
     @SuppressWarnings("unused")
     private static void printList(Iterable<?> list) {
         list.forEach(s -> System.out.print(s.toString() + " "));
