@@ -12,13 +12,74 @@ import java.util.stream.Collectors;
 public class Main {
     public static void main(String[] args) throws IOException {
         // use default or input from outside to execute sub method for daily solution
-        int dayDefault = 3;
+        int dayDefault = 4;
         int day = args.length == 0 ? dayDefault : Integer.parseInt(args[0]);
         switch (day) {
             case 1 -> day1();
             case 2 -> day2();
             case 3 -> day3();
+            case 4 -> day4();
         }
+    }
+
+    private static void day4() throws IOException {
+        // read file from resources
+        Path path = (Paths.get("src/main/resources/day4.txt"));
+        // read everything in a string list and then convert in one 2-dimensional character array just like the file was
+        List<String> list = Files.readAllLines(path);
+        // define it [x=colums][y=rows]
+        char[][] chars = new char[list.get(0).length()][list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            for (int j = 0; j < list.get(i).length(); j++) {
+                chars[j][i] = list.get(i).charAt(j);
+            }
+        }
+
+        // declare 8 directions (x, y) and word to search
+        int[][] directions = {
+                {0, -1}, // N
+                {1, -1}, // NE
+                {1, 0}, // E
+                {1, 1}, // SE
+                {0, 1}, // S
+                {-1, 1}, // SW
+                {-1, 0}, // W
+                {-1, -1}};  // NW
+        int[] word = {'X', 'M', 'A', 'S'};
+
+        int count = 0;
+        // iterate over each line and each character in character array and if it is an X search in all directions for XMAS
+        for (int i = 0; i < list.size(); i++) {
+            for (int j = 0; j < list.get(i).length(); j++) {
+                if (chars[j][i] == 'X') {
+                    for (int[] direction : directions) {
+                        int x = j;
+                        int y = i;
+                        boolean found = true;
+                        for (int l = 1; l <= 3; l++) {
+                            // change coordinates according to direction
+                            x += direction[0];
+                            y += direction[1];
+                            // if array borders are crossed, stop
+                            if ((x < 0) || (x >= list.get(i).length()) || (y < 0) || (y >= list.size())) {
+                                found = false;
+                                break;
+                            }
+                            // if next letter is wrong, stop
+                            if (chars[x][y] != word[l]) {
+                                found = false;
+                                break;
+                            }
+                        }
+                        if (found) {
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.printf("Total count of XMAS: %d\n", count);
     }
 
     private static void day3() throws IOException {
@@ -31,15 +92,15 @@ public class Main {
         String shortened = content.replaceAll("don't\\(\\).*?do\\(\\)", "");
 
         // scan for every mul(aaa,bbb)
-        Pattern pattern =  Pattern.compile("mul\\(\\d{1,3},\\d{1,3}\\)");
+        Pattern pattern = Pattern.compile("mul\\(\\d{1,3},\\d{1,3}\\)");
         Matcher matcher = pattern.matcher(shortened);
         int total = 0;
         while (matcher.find()) {
             // parse each number part and multiply
             String element = matcher.group();
-            int f1 =  Integer.parseInt(element.substring(4, element.indexOf(',')));
-            int f2 =  Integer.parseInt(element.substring(element.indexOf(',') + 1, element.indexOf(')')));
-            total += f1*f2;
+            int f1 = Integer.parseInt(element.substring(4, element.indexOf(',')));
+            int f2 = Integer.parseInt(element.substring(element.indexOf(',') + 1, element.indexOf(')')));
+            total += f1 * f2;
         }
         System.out.printf("Total sum of muls: %d\n", total);
     }
