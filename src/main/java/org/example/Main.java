@@ -35,45 +35,15 @@ public class Main {
             }
         }
 
-        // declare 8 directions (x, y) and word to search
-        int[][] directions = {
-                {0, -1}, // N
-                {1, -1}, // NE
-                {1, 0}, // E
-                {1, 1}, // SE
-                {0, 1}, // S
-                {-1, 1}, // SW
-                {-1, 0}, // W
-                {-1, -1}};  // NW
-        int[] word = {'X', 'M', 'A', 'S'};
-
         int count = 0;
         // iterate over each line and each character in character array and if it is an X search in all directions for XMAS
-        for (int i = 0; i < list.size(); i++) {
-            for (int j = 0; j < list.get(i).length(); j++) {
-                if (chars[j][i] == 'X') {
-                    for (int[] direction : directions) {
-                        int x = j;
-                        int y = i;
-                        boolean found = true;
-                        for (int l = 1; l <= 3; l++) {
-                            // change coordinates according to direction
-                            x += direction[0];
-                            y += direction[1];
-                            // if array borders are crossed, stop
-                            if ((x < 0) || (x >= list.get(i).length()) || (y < 0) || (y >= list.size())) {
-                                found = false;
-                                break;
-                            }
-                            // if next letter is wrong, stop
-                            if (chars[x][y] != word[l]) {
-                                found = false;
-                                break;
-                            }
-                        }
-                        if (found) {
-                            count++;
-                        }
+        for (int i = 1; i < list.size() - 1; i++) {
+            for (int j = 1; j < list.get(i).length() - 1; j++) {
+                if (chars[j][i] == 'A') {
+                    // compare NE/SE and SE/SW for either M or S
+                    if (((chars[j + 1][i - 1] == 'M' && chars[j - 1][i + 1] == 'S') || (chars[j + 1][i - 1] == 'S' && chars[j - 1][i + 1] == 'M')) &&
+                            ((chars[j + 1][i + 1] == 'M' && chars[j - 1][i - 1] == 'S') || (chars[j + 1][i + 1] == 'S' && chars[j - 1][i - 1] == 'M'))) {
+                        count++;
                     }
                 }
             }
