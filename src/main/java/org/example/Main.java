@@ -12,14 +12,69 @@ import java.util.stream.Collectors;
 public class Main {
     public static void main(String[] args) throws IOException {
         // use default or input from outside to execute sub method for daily solution
-        int dayDefault = 4;
+        int dayDefault = 5;
         int day = args.length == 0 ? dayDefault : Integer.parseInt(args[0]);
         switch (day) {
             case 1 -> day1();
             case 2 -> day2();
             case 3 -> day3();
             case 4 -> day4();
+            case 5 -> day5();
         }
+    }
+
+    private static void day5() throws IOException {
+        // read file from resources
+        Path path = (Paths.get("src/main/resources/day5.txt"));
+        List<String> list = Files.readAllLines(path);
+        HashMap<Integer, List<Integer>> rules = new HashMap<>();
+        List<List<Integer>> updates = new ArrayList<>();
+        boolean secondPart = false;
+        for (String line : list) {
+            // empty line is devider between parts
+            if (line.length() == 0) {
+                secondPart = true;
+                continue;
+            }
+            // first part: every line is a rule, put it in a hash map
+            if (!secondPart) {
+                Integer key = Integer.parseInt(line.split("\\|")[0]);
+                Integer value = Integer.parseInt(line.split("\\|")[1]);
+                List<Integer> valueList = (rules.get(key) == null ? new ArrayList<>() : rules.get(key));
+                valueList.add(value);
+                rules.put(key, valueList);
+                // second part (after empty line) every line is an update, put it in a list of lists
+            } else {
+                List<Integer> subList = new ArrayList<>();
+                Arrays.stream(line.split(",")).forEach(s -> subList.add(Integer.parseInt(s)));
+                updates.add(subList);
+            }
+        }
+
+        int sum = 0;
+        // examine each element of an update list and check if one of the following elements should have come before
+        for (List<Integer> update : updates) {
+            boolean wrongOrder = false;
+            for (int i = 0; i < update.size() - 1; i++) {
+                Integer updatePage = update.get(i);
+                for (int j = i + 1; j < update.size(); j++) {
+                    Integer otherPage = update.get(j);
+                    List<Integer> rulesForUpdate = rules.get(otherPage);
+                    if (rulesForUpdate != null) {
+                        if (rulesForUpdate.contains(updatePage)) {
+                            wrongOrder = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!wrongOrder) {
+                Integer middleValue = update.get(update.size() / 2);
+                sum += middleValue;
+            }
+        }
+
+        System.out.printf("Total sum of middle values: %d\n", sum);
     }
 
     private static void day4() throws IOException {
@@ -27,7 +82,7 @@ public class Main {
         Path path = (Paths.get("src/main/resources/day4.txt"));
         // read everything in a string list and then convert in one 2-dimensional character array just like the file was
         List<String> list = Files.readAllLines(path);
-        // define it [x=colums][y=rows]
+        // define it [x=columns][y=rows]
         char[][] chars = new char[list.get(0).length()][list.size()];
         for (int i = 0; i < list.size(); i++) {
             for (int j = 0; j < list.get(i).length(); j++) {
