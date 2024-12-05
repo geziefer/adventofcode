@@ -51,7 +51,7 @@ public class Main {
             }
         }
 
-        int sum = 0;
+        Integer sum = 0;
         // examine each element of an update list and check if one of the following elements should have come before
         for (List<Integer> update : updates) {
             boolean wrongOrder = false;
@@ -62,13 +62,17 @@ public class Main {
                     List<Integer> rulesForUpdate = rules.get(otherPage);
                     if (rulesForUpdate != null) {
                         if (rulesForUpdate.contains(updatePage)) {
+                            // swap numbers in list and compare next run against new swapped number
                             wrongOrder = true;
-                            break;
+                            //noinspection SuspiciousListRemoveInLoop
+                            update.remove(j);
+                            update.add(i, otherPage);
+                            updatePage = otherPage;
                         }
                     }
                 }
             }
-            if (!wrongOrder) {
+            if (wrongOrder) {
                 Integer middleValue = update.get(update.size() / 2);
                 sum += middleValue;
             }
