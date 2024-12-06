@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class Main {
     public static void main(String[] args) throws IOException {
         // use default or input from outside to execute sub method for daily solution
-        int dayDefault = 5;
+        int dayDefault = 6;
         int day = args.length == 0 ? dayDefault : Integer.parseInt(args[0]);
         switch (day) {
             case 1 -> day1();
@@ -20,7 +20,60 @@ public class Main {
             case 3 -> day3();
             case 4 -> day4();
             case 5 -> day5();
+            case 6 -> day6();
         }
+    }
+
+    private static void day6() throws IOException {
+        // read file from resources
+        Path path = (Paths.get("src/main/resources/day6.txt"));
+        // read everything in a string list and then convert in one 2-dimensional character array just like the file was
+        List<String> list = Files.readAllLines(path);
+        // define it [x(j)=columns][y(i)=rows]
+        char[][] map = new char[list.get(0).length()][list.size()];
+        int x = 0;
+        int y = 0;
+        for (int i = 0; i < list.size(); i++) {
+            for (int j = 0; j < list.get(i).length(); j++) {
+                char c = list.get(i).charAt(j);
+                if (c == '^') {
+                    x = j;
+                    y = i;
+                }
+                map[j][i] = c;
+            }
+        }
+
+        // N, E, W, S
+        int[] xDirs = {0, 1, 0, -1};
+        int[] yDirs = {-1, 0, 1, 0};
+        int currentDir = 0;
+        // start with visited position where the guard currently is
+        map[x][y] = 'X';
+        int count = 1;
+        // move guard and turn until he leaves the area, mark and count all positions (assume it will end)
+        while (x >= 0 && y >= 0 && x < map.length && y < map[0].length) {
+            int newX = x + xDirs[currentDir];
+            int newY = y + yDirs[currentDir];
+            if (newX >= 0 && newY >= 0 && newX < map.length && newY < map[0].length) {
+                // check for obstacle
+                char next = map[newX][newY];
+                if (next == '#') {
+                    // turn to next direction and circle around if end of dir structure is reached
+                    currentDir = currentDir == 3 ? 0 : currentDir + 1;
+                    // only turn, don't move, will be done next round, so keep position
+                    newX = x;
+                    newY = y;
+                } else if (next == '.') {
+                    count++;
+                    map[newX][newY] = 'X';
+                }
+            }
+            x = newX;
+            y = newY;
+        }
+
+        System.out.printf("Total number of distinct positions: %d\n", count);
     }
 
     private static void day5() throws IOException {
@@ -86,7 +139,7 @@ public class Main {
         Path path = (Paths.get("src/main/resources/day4.txt"));
         // read everything in a string list and then convert in one 2-dimensional character array just like the file was
         List<String> list = Files.readAllLines(path);
-        // define it [x=columns][y=rows]
+        // define it [x(j)=columns][y(i)=rows]
         char[][] chars = new char[list.get(0).length()][list.size()];
         for (int i = 0; i < list.size(); i++) {
             for (int j = 0; j < list.get(i).length(); j++) {
