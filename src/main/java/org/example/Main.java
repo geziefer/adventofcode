@@ -44,36 +44,71 @@ public class Main {
             }
         }
 
+        // 1st run to get initially visited positions, use copied array since it gets modified
+        List<Integer[]> visitedPositions = new ArrayList<>();
+        char[][] copiedMap = Arrays.stream(map).map(char[]::clone).toArray(char[][]::new);
+        day6_runMap(x, y, copiedMap, visitedPositions);
+
+        // run per each visited position containing an obstacle
+        int count = 0;
+        for (Integer[] pos : visitedPositions) {
+            copiedMap = Arrays.stream(map).map(char[]::clone).toArray(char[][]::new);
+            copiedMap[pos[0]][pos[1]] = '#';
+            boolean closedLoop = day6_runMap(x, y, copiedMap, null);
+            if (!closedLoop) {
+                count++;
+            }
+        }
+
+        System.out.printf("Total number of distinct positions: %d\n", count);
+    }
+
+    private static boolean day6_runMap(int x, int y, char[][] input, List<Integer[]> output) {
         // N, E, W, S
         int[] xDirs = {0, 1, 0, -1};
         int[] yDirs = {-1, 0, 1, 0};
         int currentDir = 0;
-        // start with visited position where the guard currently is
-        map[x][y] = 'X';
-        int count = 1;
         // move guard and turn until he leaves the area, mark and count all positions (assume it will end)
-        while (x >= 0 && y >= 0 && x < map.length && y < map[0].length) {
+        while (x >= 0 && y >= 0 && x < input.length && y < input[0].length) {
             int newX = x + xDirs[currentDir];
             int newY = y + yDirs[currentDir];
-            if (newX >= 0 && newY >= 0 && newX < map.length && newY < map[0].length) {
-                // check for obstacle
-                char next = map[newX][newY];
+            if (newX >= 0 && newY >= 0 && newX < input.length && newY < input[0].length) {
+                char next = input[newX][newY];
+                // obstacle
                 if (next == '#') {
                     // turn to next direction and circle around if end of dir structure is reached
                     currentDir = currentDir == 3 ? 0 : currentDir + 1;
                     // only turn, don't move, will be done next round, so keep position
                     newX = x;
                     newY = y;
+                    // just skip starting position, don't count
+                } else //noinspection StatementWithEmptyBody
+                    if (next == '^') {
+                    // do nothing
+                    // first time visit
                 } else if (next == '.') {
-                    count++;
-                    map[newX][newY] = 'X';
+                    // store current direction which this position was reached with as bit mask (not meant for printing)
+                    input[newX][newY] = (char) (Math.pow(2, currentDir));
+                    if (output != null) {
+                        output.add(new Integer[]{newX, newY});
+                    }
+                    // multiple visit
+                } else {
+                    byte posValue = (byte) input[newX][newY];
+                    byte dirValue = (byte) (Math.pow(2, currentDir));
+
+                    // if bit for dir exists, it means that we have visited this pos already in the same dir
+                    if ((posValue & dirValue) > 0) {
+                        return false;
+                    }
+                    input[newX][newY] = (char) (posValue | dirValue);
                 }
             }
             x = newX;
             y = newY;
         }
-
-        System.out.printf("Total number of distinct positions: %d\n", count);
+        // map was left, so no closed path
+        return true;
     }
 
     private static void day5() throws IOException {
