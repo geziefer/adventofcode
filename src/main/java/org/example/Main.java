@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class Main {
     public static void main(String[] args) throws IOException {
         // use default or input from outside to execute sub method for daily solution
-        int dayDefault = 6;
+        int dayDefault = 7;
         int day = args.length == 0 ? dayDefault : Integer.parseInt(args[0]);
         switch (day) {
             case 1 -> day1();
@@ -21,7 +21,56 @@ public class Main {
             case 4 -> day4();
             case 5 -> day5();
             case 6 -> day6();
+            case 7 -> day7();
         }
+    }
+
+    private static void day7() throws IOException {
+        // read file from resources
+        Path path = (Paths.get("src/main/resources/day7.txt"));
+        // read everything in hashmap with result pointing to list of lists of numbers in equation
+        // (doubled list is due to possibility of several lists for same key)
+        HashMap<Long, List<List<Long>>> equations = new HashMap<>();
+        List<String> list = Files.readAllLines(path);
+        list.forEach(s -> {
+            Long key = Long.valueOf(s.split(": ")[0]);
+            String values = s.split(": ")[1];
+            List<Long> valueList = Arrays.stream(values.split(" ")).map(Long::valueOf).collect(Collectors.toList());
+            List<List<Long>> container = new ArrayList<>();
+            if (equations.containsKey(key)) {
+                container = equations.get(key);
+            }
+            container.add(valueList);
+            equations.put(key, container);
+        });
+
+        long sum = 0L;
+        for (Long key : equations.keySet()) {
+            List<List<Long>> container = equations.get(key);
+            for (List<Long> values : container) {
+                // we need 1 less operator than numbers in equation and it has 2^n combinations
+                int max = (int) Math.pow(2, values.size() - 1) - 1;
+                // use bits for choosing either + (0) or * (1)
+                for (int i = 0; i <= max; i++) {
+                    Long result = values.get(0);
+                    for (int j = 1; j < values.size(); j++) {
+                        Long nextValue = values.get(j);
+                        int currentBit = (int) Math.pow(2, j - 1);
+                        if ((i & currentBit) > 0) {
+                            result *= nextValue;
+                        } else {
+                            result += nextValue;
+                        }
+                    }
+                    if (result.longValue() == key.longValue()) {
+                        sum += key;
+                        break;
+                    }
+                }
+            }
+        }
+
+        System.out.printf("Total sum of correct equations: %d\n", sum);
     }
 
     private static void day6() throws IOException {
@@ -84,25 +133,25 @@ public class Main {
                     // just skip starting position, don't count
                 } else //noinspection StatementWithEmptyBody
                     if (next == '^') {
-                    // do nothing
-                    // first time visit
-                } else if (next == '.') {
-                    // store current direction which this position was reached with as bit mask (not meant for printing)
-                    input[newX][newY] = (char) (Math.pow(2, currentDir));
-                    if (output != null) {
-                        output.add(new Integer[]{newX, newY});
-                    }
-                    // multiple visit
-                } else {
-                    byte posValue = (byte) input[newX][newY];
-                    byte dirValue = (byte) (Math.pow(2, currentDir));
+                        // do nothing
+                        // first time visit
+                    } else if (next == '.') {
+                        // store current direction which this position was reached with as bit mask (not meant for printing)
+                        input[newX][newY] = (char) (Math.pow(2, currentDir));
+                        if (output != null) {
+                            output.add(new Integer[]{newX, newY});
+                        }
+                        // multiple visit
+                    } else {
+                        byte posValue = (byte) input[newX][newY];
+                        byte dirValue = (byte) (Math.pow(2, currentDir));
 
-                    // if bit for dir exists, it means that we have visited this pos already in the same dir
-                    if ((posValue & dirValue) > 0) {
-                        return false;
+                        // if bit for dir exists, it means that we have visited this pos already in the same dir
+                        if ((posValue & dirValue) > 0) {
+                            return false;
+                        }
+                        input[newX][newY] = (char) (posValue | dirValue);
                     }
-                    input[newX][newY] = (char) (posValue | dirValue);
-                }
             }
             x = newX;
             y = newY;
