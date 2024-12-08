@@ -64,24 +64,36 @@ public class Main {
                     // for each pair of points calculate distance and expand in both directions and check if still in map
                     Point p1 = points.get(i);
                     Point p2 = points.get(j);
+                    // points p1 and p2 are themselves antinodes by new definition, add if not yet done
+                    if (antinodeMap[p1.x][p1.y] != '#') {
+                        count++;
+                        antinodeMap[p1.x][p1.y] = '#';
+                    }
+                    if (antinodeMap[p2.x][p2.y] != '#') {
+                        count++;
+                        antinodeMap[p2.x][p2.y] = '#';
+                    }
                     // assume p2 is further right and/or down, then dif will be positive
                     int difX = p2.x - p1.x;
                     int difY = p2.y - p1.y;
+                    // if dif is negative then p2 is further left and/or up, then dif will be negative
                     // when subtracting dif from p1 and adding to p2 it will be out of the 2 points no matter if assumption was right
-                    Point anti1 = new Point(p1.x - difX, p1.y - difY);
-                    Point anti2 = new Point(p2.x + difX, p2.y + difY);
-                    // check if still in map, mark as antinode in case it is not there yet and count
-                    if (anti1.x >= 0 && anti1.x < antennaMap.length && anti1.y >= 0 && anti1.y < antennaMap[0].length) {
-                        if (antinodeMap[anti1.x][anti1.y] != '#') {
+                    Point anti = new Point(p1.x - difX, p1.y - difY);
+                    // repeat creating points in both directions until end of map is reached
+                    while (anti.x >= 0 && anti.x < antennaMap.length && anti.y >= 0 && anti.y < antennaMap[0].length) {
+                        if (antinodeMap[anti.x][anti.y] != '#') {
                             count++;
-                            antinodeMap[anti1.x][anti1.y] = '#';
+                            antinodeMap[anti.x][anti.y] = '#';
                         }
+                        anti = new Point(anti.x - difX, anti.y - difY);
                     }
-                    if (anti2.x >= 0 && anti2.x < antennaMap.length && anti2.y >= 0 && anti2.y < antennaMap[0].length) {
-                        if (antinodeMap[anti2.x][anti2.y] != '#') {
+                    anti = new Point(p2.x + difX, p2.y + difY);
+                    while (anti.x >= 0 && anti.x < antennaMap.length && anti.y >= 0 && anti.y < antennaMap[0].length) {
+                        if (antinodeMap[anti.x][anti.y] != '#') {
                             count++;
-                            antinodeMap[anti2.x][anti2.y] = '#';
+                            antinodeMap[anti.x][anti.y] = '#';
                         }
+                        anti = new Point(anti.x + difX, anti.y + difY);
                     }
                 }
             }
@@ -231,7 +243,7 @@ public class Main {
         List<List<Integer>> updates = new ArrayList<>();
         boolean secondPart = false;
         for (String line : list) {
-            // empty line is devider between parts
+            // empty line is divider between parts
             if (line.length() == 0) {
                 secondPart = true;
                 continue;
@@ -317,7 +329,7 @@ public class Main {
         // read everything in one big string and remove newlines
         String content = Files.readString(path).replace("\n", "");
 
-        // relace everything from a don't() to the next do() to exclude disabled muls
+        // replace everything from a don't() to the next do() to exclude disabled mul instructions
         String shortened = content.replaceAll("don't\\(\\).*?do\\(\\)", "");
 
         // scan for every mul(aaa,bbb)
@@ -331,7 +343,7 @@ public class Main {
             int f2 = Integer.parseInt(element.substring(element.indexOf(',') + 1, element.indexOf(')')));
             total += f1 * f2;
         }
-        System.out.printf("Total sum of muls: %d\n", total);
+        System.out.printf("Total sum of mul instructions: %d\n", total);
     }
 
     private static void day2() throws IOException {
