@@ -42,53 +42,33 @@ public class Main {
         // exclude the duplicates from input to simplify result and manually add result later
         // 188: 9 4 2 -> 9||4*2 is solution
         // 678: 4 3 2 652 2 -> 4*3*2+652+2 is solution
-        //long extraSum = 188 + 678;
-        long extraSum = 678;
+        long sum = 188 + 678;
 
-        long sum;
-        HashMap<Long, List<Long>> failedEquations = new HashMap<>();
-        sum = day7_operatorCheck(equations, failedEquations);
-        //sum += day7_operatorCheck(failedEquations, null);
-
-        sum += extraSum;
-
-        System.out.printf("Total sum of correct equations: %d\n", sum);
-    }
-
-    private static long day7_operatorCheck(HashMap<Long, List<Long>> input, HashMap<Long, List<Long>> output) {
-        long sum = 0L;
-        for (Long key : input.keySet()) {
-            List<Long> values = input.get(key);
-            // we need 1 less operator than numbers in equation, and it has 2^n combinations
-            int max = (int) Math.pow(2, values.size() - 1) - 1;
-            // use bits for choosing either + (0) or * (1)
-            boolean successful = false;
+        // iterate through all equations
+        for (Long key : equations.keySet()) {
+            List<Long> values = equations.get(key);
+            // we need 1 less operator than numbers in equation, and it has 3^n-1 combinations
+            int max = (int) Math.pow(3, values.size() - 1) - 1;
+            // use ternary value by using modulo from division for choosing either + (0) or * (1) or || (2)
             for (int i = 0; i <= max; i++) {
                 Long result = values.get(0);
                 for (int j = 1; j < values.size(); j++) {
                     Long nextValue = values.get(j);
-                    int currentBit = (int) Math.pow(2, j - 1);
-                    if ((i & currentBit) > 0) {
-                        result *= nextValue;
-                    } else {
-                        result += nextValue;
+                    int operation = (i / (int) Math.pow(3, j - 1)) % 3;
+                    switch (operation) {
+                        case 0 -> result += nextValue;
+                        case 1 -> result *= nextValue;
+                        case 2 -> result = Long.valueOf(result.toString().concat(nextValue.toString()));
                     }
                 }
                 if (result.longValue() == key.longValue()) {
                     sum += key;
-                    successful = true;
                     break;
                 }
             }
-            // those which did not succeed put in new hash map in the same structure as before
-            if (!successful && output != null) {
-                // copy values into new list to have new reference for later changings
-                List<Long> failedValues = new ArrayList<>(values);
-                output.put(key, failedValues);
-            }
         }
 
-        return sum;
+        System.out.printf("Total sum of correct equations: %d\n", sum);
     }
 
     private static void day6() throws IOException {
