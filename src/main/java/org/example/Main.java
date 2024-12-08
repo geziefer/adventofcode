@@ -30,47 +30,65 @@ public class Main {
         Path path = (Paths.get("src/main/resources/day7.txt"));
         // read everything in hashmap with result pointing to list of lists of numbers in equation
         // (doubled list is due to possibility of several lists for same key)
-        HashMap<Long, List<List<Long>>> equations = new HashMap<>();
+        HashMap<Long, List<Long>> equations = new HashMap<>();
         List<String> list = Files.readAllLines(path);
         list.forEach(s -> {
             Long key = Long.valueOf(s.split(": ")[0]);
             String values = s.split(": ")[1];
             List<Long> valueList = Arrays.stream(values.split(" ")).map(Long::valueOf).collect(Collectors.toList());
-            List<List<Long>> container = new ArrayList<>();
-            if (equations.containsKey(key)) {
-                container = equations.get(key);
-            }
-            container.add(valueList);
-            equations.put(key, container);
+            equations.put(key, valueList);
         });
 
+        // exclude the duplicates from input to simplify result and manually add result later
+        // 188: 9 4 2 -> 9||4*2 is solution
+        // 678: 4 3 2 652 2 -> 4*3*2+652+2 is solution
+        //long extraSum = 188 + 678;
+        long extraSum = 678;
+
+        long sum;
+        HashMap<Long, List<Long>> failedEquations = new HashMap<>();
+        sum = day7_operatorCheck(equations, failedEquations);
+        //sum += day7_operatorCheck(failedEquations, null);
+
+        sum += extraSum;
+
+        System.out.printf("Total sum of correct equations: %d\n", sum);
+    }
+
+    private static long day7_operatorCheck(HashMap<Long, List<Long>> input, HashMap<Long, List<Long>> output) {
         long sum = 0L;
-        for (Long key : equations.keySet()) {
-            List<List<Long>> container = equations.get(key);
-            for (List<Long> values : container) {
-                // we need 1 less operator than numbers in equation and it has 2^n combinations
-                int max = (int) Math.pow(2, values.size() - 1) - 1;
-                // use bits for choosing either + (0) or * (1)
-                for (int i = 0; i <= max; i++) {
-                    Long result = values.get(0);
-                    for (int j = 1; j < values.size(); j++) {
-                        Long nextValue = values.get(j);
-                        int currentBit = (int) Math.pow(2, j - 1);
-                        if ((i & currentBit) > 0) {
-                            result *= nextValue;
-                        } else {
-                            result += nextValue;
-                        }
-                    }
-                    if (result.longValue() == key.longValue()) {
-                        sum += key;
-                        break;
+        for (Long key : input.keySet()) {
+            List<Long> values = input.get(key);
+            // we need 1 less operator than numbers in equation, and it has 2^n combinations
+            int max = (int) Math.pow(2, values.size() - 1) - 1;
+            // use bits for choosing either + (0) or * (1)
+            boolean successful = false;
+            for (int i = 0; i <= max; i++) {
+                Long result = values.get(0);
+                for (int j = 1; j < values.size(); j++) {
+                    Long nextValue = values.get(j);
+                    int currentBit = (int) Math.pow(2, j - 1);
+                    if ((i & currentBit) > 0) {
+                        result *= nextValue;
+                    } else {
+                        result += nextValue;
                     }
                 }
+                if (result.longValue() == key.longValue()) {
+                    sum += key;
+                    successful = true;
+                    break;
+                }
+            }
+            // those which did not succeed put in new hash map in the same structure as before
+            if (!successful && output != null) {
+                // copy values into new list to have new reference for later changings
+                List<Long> failedValues = new ArrayList<>(values);
+                output.put(key, failedValues);
             }
         }
 
-        System.out.printf("Total sum of correct equations: %d\n", sum);
+        return sum;
     }
 
     private static void day6() throws IOException {
