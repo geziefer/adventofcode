@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class Main {
     public static void main(String[] args) throws IOException {
         // use default or input from outside to execute sub method for daily solution
-        int dayDefault = 7;
+        int dayDefault = 8;
         int day = args.length == 0 ? dayDefault : Integer.parseInt(args[0]);
         switch (day) {
             case 1 -> day1();
@@ -22,7 +22,72 @@ public class Main {
             case 5 -> day5();
             case 6 -> day6();
             case 7 -> day7();
+            case 8 -> day8();
         }
+    }
+
+    private static void day8() throws IOException {
+        // read file from resources
+        Path path = (Paths.get("src/main/resources/day8.txt"));
+        // read everything in a string list and then convert in one 2-dimensional character array just like the file was
+        List<String> list = Files.readAllLines(path);
+        // array for map with [x(j)=columns][y(i)=rows]
+        char[][] antennaMap = new char[list.get(0).length()][list.size()];
+        // 2nd map for marking antinodes
+        char[][] antinodeMap = new char[list.get(0).length()][list.size()];
+        // hash map for each antenna type and its position
+        HashMap<Character, List<Point>> antennaPositions = new HashMap<>();
+        for (int i = 0; i < antennaMap.length; i++) {
+            for (int j = 0; j < antennaMap[0].length; j++) {
+                Character c = list.get(i).charAt(j);
+                antennaMap[j][i] = c;
+                antinodeMap[j][i] = '.';
+                // put Point in map in case it is not .
+                if (c != '.') {
+                    Point point = new Point(j, i);
+                    List<Point> points = new ArrayList<>();
+                    if (antennaPositions.get(c) != null) {
+                        points = antennaPositions.get(c);
+                    }
+                    points.add(point);
+                    antennaPositions.put(c, points);
+                }
+            }
+        }
+
+        int count = 0;
+        for (Character c : antennaPositions.keySet()) {
+            List<Point> points = antennaPositions.get(c);
+            // compare each point with all other points as long as there are at least 2
+            for (int i = 0; i < points.size() - 1; i++) {
+                for (int j = i + 1; j < points.size(); j++) {
+                    // for each pair of points calculate distance and expand in both directions and check if still in map
+                    Point p1 = points.get(i);
+                    Point p2 = points.get(j);
+                    // assume p2 is further right and/or down, then dif will be positive
+                    int difX = p2.x - p1.x;
+                    int difY = p2.y - p1.y;
+                    // when subtracting dif from p1 and adding to p2 it will be out of the 2 points no matter if assumption was right
+                    Point anti1 = new Point(p1.x - difX, p1.y - difY);
+                    Point anti2 = new Point(p2.x + difX, p2.y + difY);
+                    // check if still in map, mark as antinode in case it is not there yet and count
+                    if (anti1.x >= 0 && anti1.x < antennaMap.length && anti1.y >= 0 && anti1.y < antennaMap[0].length) {
+                        if (antinodeMap[anti1.x][anti1.y] != '#') {
+                            count++;
+                            antinodeMap[anti1.x][anti1.y] = '#';
+                        }
+                    }
+                    if (anti2.x >= 0 && anti2.x < antennaMap.length && anti2.y >= 0 && anti2.y < antennaMap[0].length) {
+                        if (antinodeMap[anti2.x][anti2.y] != '#') {
+                            count++;
+                            antinodeMap[anti2.x][anti2.y] = '#';
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.printf("Total count of unique antinodes: %d\n", count);
     }
 
     private static void day7() throws IOException {
@@ -290,7 +355,9 @@ public class Main {
         System.out.printf("Total safe reports: %d\n", saveCount);
     }
 
-    private static int day2_saveCount(List<List<Integer>> input, List<List<Integer>> output1, List<List<Integer>> output2, boolean damperActive) {
+    private static int day2_saveCount
+            (List<List<Integer>> input, List<List<Integer>> output1, List<List<Integer>> output2,
+             boolean damperActive) {
         int saveCount = 0;
         for (List<Integer> l : input) {
             // in case l[0] and l[1] are equal it won't be decreasing, but stops in first inner loop
@@ -361,4 +428,8 @@ public class Main {
         list.forEach(s -> System.out.print(s.toString() + " "));
         System.out.println();
     }
+
+    record Point(int x, int y) {
+    }
 }
+
